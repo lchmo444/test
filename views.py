@@ -11,7 +11,8 @@ from os import popen
 import time
 import os
 import math
-
+import re
+import platform
 
 # Create your views here.
 
@@ -494,6 +495,35 @@ def form_function(request):
 #		return HttpResponseNotFound(u'<h1>not access</h1>')
 		
 
+#####lee_20190329_process states
+def get_process_list():
+    my_os = platform.system()
+
+    if (my_os == 'Linux'):
+        all_ps = os.popen('ps -a').read()
+        process_list = re.findall(":\d\d\s([\w_\-\.]+)", all_ps)
+
+        return process_list
+
+    elif (my_os == 'Windows'):
+        #process_list = ['System Idle Process', 'System', 'Registry', 'Memory Compression']
+        process_list = []
+
+        regex = re.compile(".*[.]exe\s", re.I)
+        all_ps = os.popen('tasklist /fi "imagename eq svm-predict_cutoffmod.exe').read()
+
+        for process in regex.findall(all_ps):
+            process_list.append(process)
+
+        return process_list
+
+    return False
+
+
+
+
+
+
 
 def form_function_2(request):
 	
@@ -952,13 +982,26 @@ def form_function_2(request):
 				time.sleep(2)
 				i = os.path.getsize('sequence_hg19.result')
 
-				print(p1.read())
+				#process lee_20190329_load svm process
+				#global rrrr
+				process_list = get_process_list()
+				for rrrr in process_list:
+					print(rrrr)
+
+				#lee_20190329_original
+				#time.sleep(16)
+				#j = os.path.getsize('sequence_hg19.result')
+				#if i==j and i != 0 and j != 0:
+				#	break
 
 				time.sleep(16)
-				j = os.path.getsize('sequence_hg19.result')
-				if i==j and i != 0 and j != 0:
-					break							
-			
+				#j = os.path.getsize('sequence_hg19.result')
+				if rrrr != "svm-predict_cutoffmod.exe ":
+					break
+
+				#print(rrrr)
+				rrrr = ""
+
 
 			file_read = open('sequence_hg19.result','r').read()
 
@@ -973,7 +1016,6 @@ def form_function_2(request):
 
 	else:
 		f = NameForm_2()
-
 
 
 		return render(request, "home_site/human_long.html", {'form': f})
